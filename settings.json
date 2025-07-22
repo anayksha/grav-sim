@@ -25,12 +25,13 @@
         "COM_COLOR": [200, 200, 200]
     },
     "trail": {
-        "TRAIL_LEN": 25,
+        "TRAIL_LEN": 40,
         "TRAIL_COLOR": [255, 255, 255],
         "TRAIL_START_WIDTH": 6,
         "TRAIL_END_WIDTH": 1
     },
     "misc": {
+        "BODY_ICON_SET": ["lebron.png", [0, 255, 255]],
         "VELOCITY_LINE_COLOR": [255, 255, 255],
         "VELOCITY_LINE_THICKNESS": 2
     }

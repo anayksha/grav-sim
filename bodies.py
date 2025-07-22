@@ -1,8 +1,11 @@
 import math
+import random
 import pygame as pg
 from physics import split_vector
 
 from settings import SETTINGS
+
+BODY_ICON_SET = SETTINGS["misc"]["BODY_ICON_SET"]
 
 VELOCITY_CONST = SETTINGS["physics"]["VELOCITY_CONST"]
 
@@ -90,11 +93,12 @@ class Body:
         self.velocity = velocity
         self.accel = (0, 0)
         self.status = status
+        self.icon = random.choice(BODY_ICON_SET)
 
         # assumes each Body is made from the same material at a specific density so that
         # each kg of mass corresponds to a certain amount of surface area of the Body
         # Since radius and surface area are intertwined, the mass of the Body affects its radius
-        self.update_size()
+        self.update_surf()
 
         self.trail = Trail(TRAIL_LEN, TRAIL_COLOR, TRAIL_START_WIDTH, TRAIL_END_WIDTH)
 
@@ -114,9 +118,9 @@ class Body:
         dist = math.hypot(dist_x, dist_y)
 
         # only force is contact force if the 2 objects are inside each other
-        if dist < (self.size/2 + other_obj.size/2):
+        if dist < (self.dia/2 + other_obj.dia/2):
             # random aah formula for contact acceleration as a function of distance the objs are inside eachother
-            accel_magnitude = -COLLISION_CONST * (self.size/2 + other_obj.size/2 - dist)**2 / self.mass
+            accel_magnitude = -COLLISION_CONST * (self.dia/2 + other_obj.dia/2 - dist)**2 / self.mass
             return split_vector(accel_magnitude, math.atan2(dist_y, dist_x))
 
         # uses an expression created from gravitation formula and F = ma to determine acceleration
@@ -153,18 +157,23 @@ class Body:
         '''
         font_surf = FONT.render(obj_attribute, True, FONT_COLOR) # a pygame surface of the text
         # calculates where the center of the text should be
-        text_coords = (self.pos[0], self.pos[1] + self.size/2 + TEXT_OFFSET)
+        text_coords = (self.pos[0], self.pos[1] + self.dia/2 + TEXT_OFFSET)
         surf.blit(font_surf, center_surf(font_surf, text_coords)) # blits the text onto the screen
 
-    def update_size(self):
+    def update_surf(self):
         '''
         updates the radius of the Body based on its mass
 
         used when the user adds celestial objects with specific masses to the simulation
         '''
-        self.image = pg.image.load("lebron.png")
-        self.size = math.sqrt(self.mass) * SIZE_CONST
-        self.image = pg.transform.scale(self.image, (self.size, self.size))
+        self.dia = math.sqrt(self.mass) * SIZE_CONST
+
+        if type(self.icon) is str: # assume its an image file
+            self.surf = pg.image.load(self.icon)
+            self.surf = pg.transform.scale(self.surf, (self.dia, self.dia))
+        else: # assuming its an rgb triplet
+            self.surf = pg.surface.Surface((self.dia, self.dia), pg.SRCALPHA)
+            pg.draw.circle(self.surf, self.icon, (self.dia/2, self.dia/2), self.dia/2)
 
     def draw(self, surf:pg.surface.Surface):
         '''
@@ -174,7 +183,7 @@ class Body:
         self.trail.draw_trail(surf)
 
         # draws the Body, regardless of its status
-        surf.blit(self.image, center_surf(self.image, self.pos))
+        surf.blit(self.surf, center_surf(self.surf, self.pos))
 
         # if the Body's mass is being set
         if self.status == "M":

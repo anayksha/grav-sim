@@ -54,7 +54,7 @@ def on_event(event:pg.event.Event):
         dist_x = event.pos[0] - last_obj.pos[0]
         dist_y = event.pos[1] - last_obj.pos[1]
         last_obj.mass = math.hypot(dist_x, dist_y) * MASS_CONST
-        last_obj.update_size()
+        last_obj.update_surf()
 
     # If the last obj is an Body that was setting its mass and left click is released,
     # change its status to setting velocity
