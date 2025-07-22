@@ -1,37 +1,49 @@
 {
     "physics": {
-        "GRAV_CONST": 1000,
-        "SIZE_CONST": 2,
-        "MASS_CONST": 10,
-        "STARTING_MASS": 20,
-        "VELOCITY_CONST": 0.9,
-        "COLLISION_CONST": 100000
+        "GRAV_CONST": 1000, // how strong gravity is
+        "SIZE_CONST": 2, // how much a Body's mass affects its size
+        "MASS_CONST": 10, // how much user input affects a Body's mass
+        "STARTING_MASS": 20, // initial mass of a newly created Body
+        "VELOCITY_CONST": 0.9, // how much user input affects a Body's initial velocity
+        "COLLISION_CONST": 100000 // determines how strong the collision force between 2 Bodies is
     },
     "window": {
-        "FPS": 60,
-        "SCREEN_SIZE": [1600, 900],
-        "WINDOW_TITLE": "Gravity Simulator",
-        "BACKGROUND_IMG": "stars.png"
+        "FPS": 60, // frames per second the sim runs at; set to 0 for unlimited
+        "SCREEN_SIZE": [1600, 900], // pygame window size
+        "WINDOW_TITLE": "Gravity Simulator", // pygame window title
+        "BACKGROUND_IMG": "stars.png" // filepath of background img of sim 
     },
     "font": {
         "FONT_FILE": "SpaceMono-Regular.ttf",
         "FONT_SIZE": 16,
         "FONT_COLOR": [255, 255, 255],
+        // when creating a Body, specifies how far down the mass or velocity label
+        // appears below the bottom edge of the Body
         "TEXT_OFFSET": 14
     },
+    // center of mass
     "COM": {
         "COM_CIRCLE_RADIUS": 10,
         "COM_CIRCLE_WIDTH": 3,
         "COM_COLOR": [200, 200, 200]
     },
     "trail": {
-        "TRAIL_LEN": 40,
+        "TRAIL_LEN": 40, // # of points in a Body's trail 
         "TRAIL_COLOR": [255, 255, 255],
         "TRAIL_START_WIDTH": 6,
         "TRAIL_END_WIDTH": 1
     },
     "misc": {
-        "BODY_ICON_SET": ["lebron.png", [0, 255, 255]],
+        // a list of image filepaths or rgb triplets that will be randomly chosen from when
+        // creating a body; the body will either be an image or a circle of the color
+        // specified by the rgb triplet
+        // images and rgb triplets can be intermixed here
+        "BODY_ICON_SET": [
+            "lebron.png",
+            [0, 255, 255]
+        ],
+        // thickness and color of the line that shows the direction
+        // of a Body's initial velocity when creating it
         "VELOCITY_LINE_COLOR": [255, 255, 255],
         "VELOCITY_LINE_THICKNESS": 2
     }
