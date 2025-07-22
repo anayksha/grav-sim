@@ -1,0 +1,37 @@
+{
+    "physics": {
+        "GRAV_CONST": 1000,
+        "SIZE_CONST": 2,
+        "MASS_CONST": 10,
+        "STARTING_MASS": 20,
+        "VELOCITY_CONST": 0.9,
+        "COLLISION_CONST": 100000
+    },
+    "window": {
+        "FPS": 60,
+        "SCREEN_SIZE": [1600, 900],
+        "WINDOW_TITLE": "Gravity Simulator",
+        "BACKGROUND_IMG": "stars.png"
+    },
+    "font": {
+        "FONT_FILE": "SpaceMono-Regular.ttf",
+        "FONT_SIZE": 16,
+        "FONT_COLOR": [255, 255, 255],
+        "TEXT_OFFSET": 14
+    },
+    "COM": {
+        "COM_CIRCLE_RADIUS": 10,
+        "COM_CIRCLE_WIDTH": 3,
+        "COM_COLOR": [200, 200, 200]
+    },
+    "trail": {
+        "TRAIL_LEN": 25,
+        "TRAIL_COLOR": [255, 255, 255],
+        "TRAIL_START_WIDTH": 6,
+        "TRAIL_END_WIDTH": 1
+    },
+    "misc": {
+        "VELOCITY_LINE_COLOR": [255, 255, 255],
+        "VELOCITY_LINE_THICKNESS": 2
+    }
+}
