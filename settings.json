@@ -5,7 +5,7 @@
         "MASS_CONST": 4.6, // how much user input affects a Body's mass
         "STARTING_MASS": 20, // initial mass of a newly created Body
         "VELOCITY_CONST": 0.9, // how much user input affects a Body's initial velocity
-        "COLLISION_CONST": 100000 // determines how strong the collision force between 2 Bodies is
+        "RESTITUTION_COEFF": 1 // determines how much energy is conserved between collisions
     },
     "window": {
         "FPS": 60, // frames per second the sim runs at; set to 0 for unlimited

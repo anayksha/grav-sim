@@ -1,4 +1,4 @@
-from math import sqrt
+from math import sqrt, cos, atan2
 import pygame as pg
 
 from physics import Vector
@@ -9,7 +9,7 @@ from settings import SETTINGS
 SCREEN_SIZE = SETTINGS["window"]["SCREEN_SIZE"]
 
 GRAV_CONST = SETTINGS["physics"]["GRAV_CONST"]
-COLLISION_CONST = SETTINGS["physics"]["COLLISION_CONST"]
+RESTITUTION_COEFF = SETTINGS["physics"]["RESTITUTION_COEFF"]
 
 class World:
     '''
@@ -32,23 +32,36 @@ class World:
     def check_collision(self, body1:Body, body2:Body):
         return (body2.pos - body1.pos).magnitude <= (body1.dia + body2.dia)/2
 
-    def resolve_collisions(self, body1:Body, body2:Body):
+    def resolve_collisions(self, body1:Body, body2:Body, delta_time):
         '''
         so this uses a really complicated and goofy formula to reposition bodies
         that are intersecting eachother
         '''
-        vel_ba = body2.velocity - body1.velocity
-        pos_ba = body2.pos - body1.pos
+        vel_diff = body2.velocity - body1.velocity
+        pos_diff = body2.pos - body1.pos
 
-        a = vel_ba.dot(vel_ba)
-        b = 2 * vel_ba.dot(pos_ba)
-        c = pos_ba.dot(pos_ba) - ((body1.dia + body2.dia) / 2)**2
+        a = vel_diff.dot(vel_diff)
+        b = 2 * vel_diff.dot(pos_diff)
+        c = pos_diff.dot(pos_diff) - ((body1.dia + body2.dia) / 2)**2
 
         # quadratic formula aah
         time = (-b - sqrt(b**2 - 4 * a * c)) / (2 * a)
 
         body1.pos += body1.velocity * time
         body2.pos += body2.velocity * time
+
+        # relative velocity
+        rel_vel = body1.velocity - body2.velocity
+        collision_angle = atan2(*(body1.pos - body2.pos).components()[::-1])   
+
+        impulse = rel_vel * (1 + RESTITUTION_COEFF) * cos(collision_angle)
+        impulse /= (1 / body1.mass) + (1 / body2.mass)
+
+        body1.velocity += impulse / body1.mass
+        body2.velocity -= impulse / body2.mass
+        print(time)
+        body1.move(delta_time + time)
+        body2.move(delta_time + time)
 
     def remove_far_bodies(self):
         to_remove = []
@@ -78,12 +91,6 @@ class World:
         # calculates horizontal, vertical, and actual distance between the 2 Body to calculate accel
         dist = body2.pos - body1.pos
 
-        # only force is contact force if the 2 objects are inside each other
-        if dist.magnitude < (body1.dia/2 + body2.dia/2):
-            # random aah formula for contact acceleration as a function of distance the objs are inside eachother
-            accel_magnitude = -100000 * (body1.dia/2 + body2.dia/2 - dist.magnitude)**2
-            return Vector(accel_magnitude, dist.angle, input_angle=True)
-
         # uses an expression created from gravitation formula and F = ma to determine acceleration
         return Vector(GRAV_CONST * body1.mass * body2.mass / dist.magnitude**2, dist.angle, input_angle=True)
 
@@ -107,6 +114,11 @@ class World:
             obj.change_velocity(delta_time)
             obj.move(delta_time)
             obj.accel = Vector(0, 0)
+        
+        for i in range(len(self.bodies) - 1):
+            for j in range(i + 1, len(self.bodies)):
+                if self.check_collision(self.bodies[i], self.bodies[j]):
+                    self.resolve_collisions(self.bodies[i], self.bodies[j], delta_time)
 
     def display(self, screen:pg.surface.Surface, background:pg.surface.Surface, zoom=None, camera_pan=None):
         '''
