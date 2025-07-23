@@ -68,6 +68,9 @@ class Vector:
 
     def __truediv__(self, other):
         return Vector(self.x / other, self.y / other)
+    
+    def __neg__(self):
+        return Vector(-self.x, -self.y)
 
     def cross(self, other:"Vector") -> float:
         '''

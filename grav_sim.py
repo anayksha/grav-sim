@@ -77,23 +77,21 @@ def calculate_mvt(delta_time:float):
     calculating velocity and changing position
     '''
     # for each Body in celestial_objs, calculate the accel caused by all other Objs
-    for obj in celestial_objs:
-        accels = []
+    for i in range(len(celestial_objs) - 1):
 
-        for other_obj in celestial_objs:
+        for j in range(i + 1, len(celestial_objs)):
             # if obj and other_obj are not the same, calculate accel
-            if other_obj is not obj:
-                accels.append(obj.calc_accel(other_obj))
-
-        # sum all of the accels calculated and change velocity
-        obj.sum_accel(accels)
-        obj.change_velocity(delta_time)
+            force = celestial_objs[i].calc_grav_force(celestial_objs[j])
+            celestial_objs[i].accel += force / celestial_objs[i].mass
+            celestial_objs[j].accel += -force / celestial_objs[j].mass
 
     # once the accels for all Objs are calculated, move them all
     # this is separated from the main loop because moving the objects
     # as calculating the motions of the other objects would change the calculations
     for obj in celestial_objs:
+        obj.change_velocity(delta_time)
         obj.move(delta_time)
+        obj.accel = Vector(0, 0)
 
 def display_com(objs:list, surface:pg.surface.Surface):
     '''

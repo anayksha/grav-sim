@@ -102,7 +102,7 @@ class Body:
 
         self.trail = Trail(TRAIL_LEN, TRAIL_COLOR, TRAIL_START_WIDTH, TRAIL_END_WIDTH)
 
-    def calc_accel(self, other_obj:"Body") -> Vector:
+    def calc_grav_force(self, other_obj:"Body") -> Vector:
         '''
         Calculates the acceleration one object faces due to the gravitational force
         between itself and one other object (other_obj) and then returns that
@@ -120,11 +120,11 @@ class Body:
         # only force is contact force if the 2 objects are inside each other
         if dist < (self.dia/2 + other_obj.dia/2):
             # random aah formula for contact acceleration as a function of distance the objs are inside eachother
-            accel_magnitude = -COLLISION_CONST * (self.dia/2 + other_obj.dia/2 - dist)**2 / self.mass
+            accel_magnitude = -COLLISION_CONST * (self.dia/2 + other_obj.dia/2 - dist)**2
             return Vector(accel_magnitude, math.atan2(dist_y, dist_x), input_angle=True)
 
         # uses an expression created from gravitation formula and F = ma to determine acceleration
-        return Vector(GRAV_CONST * other_obj.mass / dist**2, math.atan2(dist_y, dist_x), input_angle=True)
+        return Vector(GRAV_CONST * self.mass * other_obj.mass / dist**2, math.atan2(dist_y, dist_x), input_angle=True)
 
     def sum_accel(self, accelerations:list):
         '''Sums a list of acceleration lists and changes self.accel in place'''
