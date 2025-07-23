@@ -16,7 +16,7 @@ direction, and its length shows its speed.
 
 TODO: add comments for trail, center of mass, and other stuff
 '''
-import math
+from math import sin, cos, pi
 import pygame as pg
 
 from physics import Vector
@@ -39,7 +39,7 @@ def on_event(event:pg.event.Event):
     if not celestial_objs:
         # add an Body if there isn't one in celestial_objs and a mouse click is detected
         if event.type == pg.MOUSEBUTTONDOWN:
-            celestial_objs.append(Body(STARTING_MASS, list(event.pos), Vector(0, 0), "M"))
+            celestial_objs.append(Body(STARTING_MASS, Vector(*event.pos), Vector(0, 0), "M"))
         # stop the function, since it will throw an error with an unpopulated celestial_objs
         return
 
@@ -47,14 +47,13 @@ def on_event(event:pg.event.Event):
 
     # create a new object if there isn't one being created and add it to celestial_objs
     if event.type == pg.MOUSEBUTTONDOWN and last_obj.status in ["O", "F"]:
-        celestial_objs.append(Body(STARTING_MASS, list(event.pos), Vector(0, 0), "M"))
+        celestial_objs.append(Body(STARTING_MASS, Vector(*event.pos), Vector(0, 0), "M"))
 
     # changes the mass and radius of an object being added in by changing
     # it with respect to the distance between the Body and the cursor
     elif event.type == pg.MOUSEMOTION and last_obj.status == "M":
-        dist_x = event.pos[0] - last_obj.pos[0]
-        dist_y = event.pos[1] - last_obj.pos[1]
-        last_obj.mass = math.hypot(dist_x, dist_y) * MASS_CONST
+        dist = Vector(*event.pos) - last_obj.pos
+        last_obj.mass = dist.magnitude * MASS_CONST
         last_obj.update_surf()
 
     # If the last obj is an Body that was setting its mass and left click is released,
@@ -65,9 +64,8 @@ def on_event(event:pg.event.Event):
     # set the last_obj's velocity with respect to the distance between the mouse and the cursor
     # if the last_obj's mode was setting velocity. Also change the Body's status to operational
     elif event.type == pg.MOUSEBUTTONDOWN and last_obj.status == "V":
-        dist_x = event.pos[0] - last_obj.pos[0]
-        dist_y = event.pos[1] - last_obj.pos[1]
-        last_obj.velocity = Vector(dist_x, dist_y) * VELOCITY_CONST
+        dist = Vector(*event.pos) - last_obj.pos
+        last_obj.velocity = dist * VELOCITY_CONST
         last_obj.status = "O"
 
 def calculate_mvt(delta_time:float):
@@ -148,9 +146,9 @@ def create_obj_circle(num:int, radius:int, center:tuple, mass:int=200, spd:float
     perpendicular to the radius of the circle
     '''
     for i in range(num):
-        angle = i * 2 * math.pi / num # angle of the object in radians
-        pos = [center[0] + (radius * math.cos(angle)), center[1] + (radius * math.sin(angle))]
-        vel = [spd * -math.sin(angle), spd * math.cos(angle)]
+        angle = i * 2 * pi / num # angle of the object in radians
+        pos = [center[0] + (radius * cos(angle)), center[1] + (radius * sin(angle))]
+        vel = [spd * -sin(angle), spd * cos(angle)]
         celestial_objs.append(Body(mass, pos, vel, state))
 
 if __name__ == "__main__":

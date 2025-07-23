@@ -1,4 +1,4 @@
-import math
+from math import hypot, sin, cos, atan2
 
 class Vector:
     '''
@@ -11,31 +11,31 @@ class Vector:
         if input_angle is False, val1 and val2 are x and y components, respectively
         '''
         if input_angle:
-            # TODO
-            pass
+            self.x = val1 * cos(val2)
+            self.y = val1 * sin(val2)
         else:
             self.x = val1
             self.y = val2
 
     @property
     def magnitude(self):
-        return math.hypot(self.x, self.y)
+        return hypot(self.x, self.y)
 
     @property
     def angle(self):
-        return math.atan2(self.y, self.x)
+        return atan2(self.y, self.x)
 
     @magnitude.setter
     def magnitude(self, magnitude):
         angle = self.angle
-        self.x = magnitude * math.cos(angle)
-        self.y = magnitude * math.cos(angle)
+        self.x = magnitude * cos(angle)
+        self.y = magnitude * cos(angle)
 
     @angle.setter
     def angle(self, angle):
         magnitude = self.magnitude
-        self.x = magnitude * math.cos(angle)
-        self.y = magnitude * math.sin(angle)
+        self.x = magnitude * cos(angle)
+        self.y = magnitude * sin(angle)
 
     def __add__(self, other:"Vector") -> "Vector":
         return Vector(self.x + other.x, self.y + other.y)
@@ -57,11 +57,14 @@ class Vector:
         cross product of 2 vectors; dont know how to implement a cross product resulting
         in a vector bc this is supposed to be 2D vectors only
         '''
-        return self.magnitude * other.magnitude * math.sin(other.angle - self.angle)
+        return self.magnitude * other.magnitude * sin(other.angle - self.angle)
 
     def dot(self, other:"Vector") -> float:
         '''
         dot product of 2 vectors
         '''
         return self.x * other.x + self.y * other.y
+    
+    def components(self):
+        return [self.x, self.y]
     

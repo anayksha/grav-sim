@@ -74,7 +74,7 @@ class Body:
     represented as strings, with "O", "M", "V", "F" for operational, changing mass, changing
     velocity, and fixed, respectively.
     '''
-    def __init__(self, mass:float, pos:list, velocity:Vector=None, status:str="O"):
+    def __init__(self, mass:float, pos:Vector, velocity:Vector=None, status:str="O"):
         '''
         Initializes an Body with a bunch of properties responsible for calculating
         the position of an Body over time as well as some visual properties
@@ -102,33 +102,27 @@ class Body:
 
         self.trail = Trail(TRAIL_LEN, TRAIL_COLOR, TRAIL_START_WIDTH, TRAIL_END_WIDTH)
 
-    def calc_grav_force(self, other_obj:"Body") -> Vector:
+    def calc_grav_force(self, other:"Body") -> Vector:
         '''
         Calculates the acceleration one object faces due to the gravitational force
         between itself and one other object (other_obj) and then returns that
         '''
         # if the Body's status isn't operational, or other_obj is new and its status is
         # setting mass or setting velocity, the Body shouldn't accelerate
-        if self.status != "O" or other_obj.status in ["M", "V"]:
+        if self.status != "O" or other.status in ["M", "V"]:
             return Vector(0, 0)
 
         # calculates horizontal, vertical, and actual distance between the 2 Body to calculate accel
-        dist_x = other_obj.pos[0] - self.pos[0]
-        dist_y = other_obj.pos[1] - self.pos[1]
-        dist = math.hypot(dist_x, dist_y)
+        dist = other.pos - self.pos
 
         # only force is contact force if the 2 objects are inside each other
-        if dist < (self.dia/2 + other_obj.dia/2):
+        if dist.magnitude < (self.dia/2 + other.dia/2):
             # random aah formula for contact acceleration as a function of distance the objs are inside eachother
-            accel_magnitude = -COLLISION_CONST * (self.dia/2 + other_obj.dia/2 - dist)**2
-            return Vector(accel_magnitude, math.atan2(dist_y, dist_x), input_angle=True)
+            accel_magnitude = -COLLISION_CONST * (self.dia/2 + other.dia/2 - dist.magnitude)**2
+            return Vector(accel_magnitude, dist.angle, input_angle=True)
 
         # uses an expression created from gravitation formula and F = ma to determine acceleration
-        return Vector(GRAV_CONST * self.mass * other_obj.mass / dist**2, math.atan2(dist_y, dist_x), input_angle=True)
-
-    def sum_accel(self, accelerations:list):
-        '''Sums a list of acceleration lists and changes self.accel in place'''
-        self.accel = sum(accelerations, Vector(0, 0))
+        return Vector(GRAV_CONST * self.mass * other.mass / dist.magnitude**2, dist.angle, input_angle=True)
 
     def change_velocity(self, delta_time:float):
         '''Changes self.velocity in place using self.accel and change in time'''
@@ -141,10 +135,9 @@ class Body:
 
         also updates its trail
         '''
-        self.pos[0] += self.velocity.x * delta_time
-        self.pos[1] += self.velocity.y * delta_time
+        self.pos += self.velocity * delta_time
 
-        self.trail.update_trail(tuple(self.pos))
+        self.trail.update_trail(self.pos.components())
 
     def display_attribute(self, surf, obj_attribute:str):
         '''
@@ -154,7 +147,7 @@ class Body:
         '''
         font_surf = FONT.render(obj_attribute, True, FONT_COLOR) # a pygame surface of the text
         # calculates where the center of the text should be
-        text_coords = (self.pos[0], self.pos[1] + self.dia/2 + TEXT_OFFSET)
+        text_coords = (self.pos.x, self.pos.y + self.dia/2 + TEXT_OFFSET)
         surf.blit(font_surf, center_surf(font_surf, text_coords)) # blits the text onto the screen
 
     def update_surf(self):
@@ -180,7 +173,7 @@ class Body:
         self.trail.draw_trail(surf)
 
         # draws the Body, regardless of its status
-        surf.blit(self.surf, center_surf(self.surf, self.pos))
+        surf.blit(self.surf, center_surf(self.surf, self.pos.components()))
 
         # if the Body's mass is being set
         if self.status == "M":
@@ -192,14 +185,13 @@ class Body:
             # gets mouse pos for velocity calculations and drawing a line
             mouse_pos = pg.mouse.get_pos()
 
-            dist_x = mouse_pos[0] - self.pos[0]
-            dist_y = mouse_pos[1] - self.pos[1]
+            dist = Vector(*mouse_pos) - self.pos
 
-            velocity = f"{Vector(dist_x, dist_y).magnitude * VELOCITY_CONST:.2f} m/s"
+            velocity = f"{dist.magnitude * VELOCITY_CONST:.2f} m/s"
             self.display_attribute(surf, velocity)
 
-            # draws a line to display the direction of the velocity 
-            pg.draw.line(surf, VELOCITY_LINE_COLOR, self.pos, mouse_pos, VELOCITY_LINE_THICKNESS)
+            # draws a line to display the direction of the velocity
+            pg.draw.line(surf, VELOCITY_LINE_COLOR, self.pos.components(), mouse_pos, VELOCITY_LINE_THICKNESS)
 
 # TODO: find a better place to put this
 def center_surf(surface:pg.surface.Surface, coords:tuple) -> tuple:
