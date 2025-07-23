@@ -34,6 +34,7 @@ def on_event(event:pg.event.Event):
     # stop running quit if the pygame window is closed
     if event.type == pg.QUIT:
         running = False
+        return
 
     # if celestial_obj isn't populated, this should only check for a mouse click
     if not celestial_objs:
@@ -74,11 +75,9 @@ def calculate_mvt(delta_time:float):
     caused by every other object, summing the accels, and then
     calculating velocity and changing position
     '''
-    # for each Body in celestial_objs, calculate the accel caused by all other Objs
+    # calculate gravitational acceleration between each pair of Bodies
     for i in range(len(celestial_objs) - 1):
-
         for j in range(i + 1, len(celestial_objs)):
-            # if obj and other_obj are not the same, calculate accel
             force = celestial_objs[i].calc_grav_force(celestial_objs[j])
             celestial_objs[i].accel += force / celestial_objs[i].mass
             celestial_objs[j].accel += -force / celestial_objs[j].mass
@@ -91,16 +90,6 @@ def calculate_mvt(delta_time:float):
         obj.move(delta_time)
         obj.accel = Vector(0, 0)
 
-def display_com(objs:list, surface:pg.surface.Surface):
-    '''
-    draws the center of mass of a list of objs on a surface as a hollow circle
-    '''
-    total_mass = sum(obj.mass for obj in objs)
-    com_x = sum(obj.mass * obj.pos[0] for obj in objs) / total_mass
-    com_y = sum(obj.mass * obj.pos[1] for obj in objs) / total_mass
-
-    pg.draw.circle(surface, COM_COLOR, (com_x, com_y), COM_CIRCLE_RADIUS, COM_CIRCLE_WIDTH)
-
 def display():
     '''
     displays everything in the pygame window, including the motion
@@ -111,9 +100,6 @@ def display():
     # draws each Body in celestial_objs
     for obj in celestial_objs:
         obj.draw(screen)
-
-    # if celestial_objs:
-    #     display_com(celestial_objs, screen)
 
     pg.display.flip() # display everything on the screen
 
@@ -140,6 +126,7 @@ def simulate():
     # quit pygame when the simulation is no longer running
     pg.quit()
 
+# TODO: move this to some diff module, mabye called goofy gimmicks idk 
 def create_obj_circle(num:int, radius:int, center:tuple, mass:int=200, spd:float=0, state:str="F"):
     '''
     adds a circle with a certain radius of num objects with a certan mass, with a velocity
@@ -150,6 +137,13 @@ def create_obj_circle(num:int, radius:int, center:tuple, mass:int=200, spd:float
         pos = [center[0] + (radius * cos(angle)), center[1] + (radius * sin(angle))]
         vel = [spd * -sin(angle), spd * cos(angle)]
         celestial_objs.append(Body(mass, pos, vel, state))
+
+def world_pos():
+    '''
+    TODO: implement a function that yeilds a position in a world from
+    position in a window by adjusting for zoom and camera panning
+    '''
+    pass
 
 if __name__ == "__main__":
 
@@ -162,11 +156,6 @@ if __name__ == "__main__":
     SCREEN_SIZE = SETTINGS["window"]["SCREEN_SIZE"]
     WINDOW_TITLE = SETTINGS["window"]["WINDOW_TITLE"]
     BACKGROUND_IMG = SETTINGS["window"]["BACKGROUND_IMG"]
-
-    # Center of mass settings
-    COM_CIRCLE_RADIUS = SETTINGS["COM"]["COM_CIRCLE_RADIUS"]
-    COM_CIRCLE_WIDTH = SETTINGS["COM"]["COM_CIRCLE_WIDTH"]
-    COM_COLOR = SETTINGS["COM"]["COM_COLOR"]
 
     # sets up pygame
     pg.init()

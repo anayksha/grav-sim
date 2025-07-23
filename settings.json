@@ -11,21 +11,15 @@
         "FPS": 60, // frames per second the sim runs at; set to 0 for unlimited
         "SCREEN_SIZE": [1600, 900], // pygame window size
         "WINDOW_TITLE": "Gravity Simulator", // pygame window title
-        "BACKGROUND_IMG": "stars.png" // filepath of background img of sim 
+        "BACKGROUND_IMG": "assets\\stars.png" // filepath of background img of sim 
     },
     "font": {
-        "FONT_FILE": "SpaceMono-Regular.ttf",
+        "FONT_FILE": "assets\\SpaceMono-Regular.ttf",
         "FONT_SIZE": 16,
         "FONT_COLOR": [255, 255, 255],
         // when creating a Body, specifies how far down the mass or velocity label
         // appears below the bottom edge of the Body
         "TEXT_OFFSET": 14
-    },
-    // center of mass
-    "COM": {
-        "COM_CIRCLE_RADIUS": 10,
-        "COM_CIRCLE_WIDTH": 3,
-        "COM_COLOR": [200, 200, 200]
     },
     "trail": {
         "TRAIL_LEN": 40, // # of points in a Body's trail 
@@ -39,7 +33,7 @@
         // specified by the rgb triplet
         // images and rgb triplets can be intermixed here
         "BODY_ICON_SET": [
-            "lebron.png",
+            "assets\\lebron.png",
             [0, 255, 255]
         ],
         // thickness and color of the line that shows the direction

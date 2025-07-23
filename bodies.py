@@ -1,4 +1,4 @@
-import math
+from math import sqrt
 import random
 import pygame as pg
 from physics import Vector
@@ -156,7 +156,7 @@ class Body:
 
         used when the user adds celestial objects with specific masses to the simulation
         '''
-        self.dia = math.sqrt(self.mass) * SIZE_CONST
+        self.dia = sqrt(self.mass) * SIZE_CONST
 
         if type(self.icon) is str: # assume its an image file
             self.surf = pg.image.load(self.icon)
