@@ -2,7 +2,7 @@
 
 A 2D gravity simulation built with python and pygame
 
-Uses its own physics engine
+I tried to build it from scratch as much as I could so it uses its own physics engine 
 
 the sim has been built before this git repo was created and has simply been expanded upon and modified
 

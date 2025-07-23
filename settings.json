@@ -2,7 +2,7 @@
     "physics": {
         "GRAV_CONST": 1000, // how strong gravity is
         "SIZE_CONST": 2, // how much a Body's mass affects its size
-        "MASS_CONST": 10, // how much user input affects a Body's mass
+        "MASS_CONST": 4.6, // how much user input affects a Body's mass
         "STARTING_MASS": 20, // initial mass of a newly created Body
         "VELOCITY_CONST": 0.9, // how much user input affects a Body's initial velocity
         "COLLISION_CONST": 100000 // determines how strong the collision force between 2 Bodies is
