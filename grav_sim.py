@@ -19,10 +19,11 @@ TODO: add comments for trail, center of mass, and other stuff
 import math
 import pygame as pg
 
+from physics import Vector
+
 from bodies import Body
 
 from settings import SETTINGS
-
 
 
 def on_event(event:pg.event.Event):
@@ -38,7 +39,7 @@ def on_event(event:pg.event.Event):
     if not celestial_objs:
         # add an Body if there isn't one in celestial_objs and a mouse click is detected
         if event.type == pg.MOUSEBUTTONDOWN:
-            celestial_objs.append(Body(STARTING_MASS, list(event.pos), [0, 0], "M"))
+            celestial_objs.append(Body(STARTING_MASS, list(event.pos), Vector(0, 0), "M"))
         # stop the function, since it will throw an error with an unpopulated celestial_objs
         return
 
@@ -46,7 +47,7 @@ def on_event(event:pg.event.Event):
 
     # create a new object if there isn't one being created and add it to celestial_objs
     if event.type == pg.MOUSEBUTTONDOWN and last_obj.status in ["O", "F"]:
-        celestial_objs.append(Body(STARTING_MASS, list(event.pos), [0, 0], "M"))
+        celestial_objs.append(Body(STARTING_MASS, list(event.pos), Vector(0, 0), "M"))
 
     # changes the mass and radius of an object being added in by changing
     # it with respect to the distance between the Body and the cursor
@@ -66,7 +67,7 @@ def on_event(event:pg.event.Event):
     elif event.type == pg.MOUSEBUTTONDOWN and last_obj.status == "V":
         dist_x = event.pos[0] - last_obj.pos[0]
         dist_y = event.pos[1] - last_obj.pos[1]
-        last_obj.velocity = [dist_x * VELOCITY_CONST, dist_y * VELOCITY_CONST]
+        last_obj.velocity = Vector(dist_x, dist_y) * VELOCITY_CONST
         last_obj.status = "O"
 
 def calculate_mvt(delta_time:float):

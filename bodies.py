@@ -1,7 +1,7 @@
 import math
 import random
 import pygame as pg
-from physics import split_vector
+from physics import Vector
 
 from settings import SETTINGS
 
@@ -74,7 +74,7 @@ class Body:
     represented as strings, with "O", "M", "V", "F" for operational, changing mass, changing
     velocity, and fixed, respectively.
     '''
-    def __init__(self, mass:float, pos:list, velocity:list=None, status:str="O"):
+    def __init__(self, mass:float, pos:list, velocity:Vector=None, status:str="O"):
         '''
         Initializes an Body with a bunch of properties responsible for calculating
         the position of an Body over time as well as some visual properties
@@ -85,13 +85,13 @@ class Body:
         # necessary bc default arguments are shared by all instances of the class
         # so when we need to change it, it changes all instances
         if velocity is None:
-            velocity = [0, 0]
+            velocity = Vector(0, 0)
 
         # assigns the Body all of its properties that affect its behavior
         self.mass = mass
         self.pos = pos
         self.velocity = velocity
-        self.accel = (0, 0)
+        self.accel = Vector(0, 0)
         self.status = status
         self.icon = random.choice(BODY_ICON_SET)
 
@@ -102,7 +102,7 @@ class Body:
 
         self.trail = Trail(TRAIL_LEN, TRAIL_COLOR, TRAIL_START_WIDTH, TRAIL_END_WIDTH)
 
-    def calc_accel(self, other_obj:"Body") -> tuple:
+    def calc_accel(self, other_obj:"Body") -> Vector:
         '''
         Calculates the acceleration one object faces due to the gravitational force
         between itself and one other object (other_obj) and then returns that
@@ -110,7 +110,7 @@ class Body:
         # if the Body's status isn't operational, or other_obj is new and its status is
         # setting mass or setting velocity, the Body shouldn't accelerate
         if self.status != "O" or other_obj.status in ["M", "V"]:
-            return (0, 0)
+            return Vector(0, 0)
 
         # calculates horizontal, vertical, and actual distance between the 2 Body to calculate accel
         dist_x = other_obj.pos[0] - self.pos[0]
@@ -121,21 +121,18 @@ class Body:
         if dist < (self.dia/2 + other_obj.dia/2):
             # random aah formula for contact acceleration as a function of distance the objs are inside eachother
             accel_magnitude = -COLLISION_CONST * (self.dia/2 + other_obj.dia/2 - dist)**2 / self.mass
-            return split_vector(accel_magnitude, math.atan2(dist_y, dist_x))
+            return Vector(accel_magnitude, math.atan2(dist_y, dist_x), input_angle=True)
 
         # uses an expression created from gravitation formula and F = ma to determine acceleration
-        return split_vector(GRAV_CONST * other_obj.mass / dist**2, math.atan2(dist_y, dist_x))
+        return Vector(GRAV_CONST * other_obj.mass / dist**2, math.atan2(dist_y, dist_x), input_angle=True)
 
     def sum_accel(self, accelerations:list):
         '''Sums a list of acceleration lists and changes self.accel in place'''
-        accel_x = sum(accel[0] for accel in accelerations)
-        accel_y = sum(accel[1] for accel in accelerations)
-        self.accel = (accel_x, accel_y)
+        self.accel = sum(accelerations, Vector(0, 0))
 
     def change_velocity(self, delta_time:float):
         '''Changes self.velocity in place using self.accel and change in time'''
-        self.velocity[0] += self.accel[0] * delta_time
-        self.velocity[1] += self.accel[1] * delta_time
+        self.velocity += self.accel * delta_time
 
     def move(self, delta_time:float):
         '''
@@ -144,8 +141,8 @@ class Body:
 
         also updates its trail
         '''
-        self.pos[0] += self.velocity[0] * delta_time
-        self.pos[1] += self.velocity[1] * delta_time
+        self.pos[0] += self.velocity.x * delta_time
+        self.pos[1] += self.velocity.y * delta_time
 
         self.trail.update_trail(tuple(self.pos))
 
@@ -195,11 +192,10 @@ class Body:
             # gets mouse pos for velocity calculations and drawing a line
             mouse_pos = pg.mouse.get_pos()
 
-            # calculates velocity with the distance between the mouse and the Body
             dist_x = mouse_pos[0] - self.pos[0]
             dist_y = mouse_pos[1] - self.pos[1]
-            # rounds velocity and turns it to a string w/ units
-            velocity = f"{math.hypot(dist_x, dist_y) * VELOCITY_CONST:.2f} m/s"
+
+            velocity = f"{Vector(dist_x, dist_y).magnitude * VELOCITY_CONST:.2f} m/s"
             self.display_attribute(surf, velocity)
 
             # draws a line to display the direction of the velocity 
