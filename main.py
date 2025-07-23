@@ -13,15 +13,13 @@ To create a celestial object, click, hold, and drag to add one and set its mass.
 desired mass has been set, release the left mouse button. To set the object's velocity, click
 anywhere on the screen. The line shown while changing the object's velocity shows its
 direction, and its length shows its speed.
-
-TODO: add comments for trail, center of mass, and other stuff
 '''
 from math import sin, cos, pi
 import pygame as pg
 
 from physics import Vector
-
 from bodies import Body
+from world import World
 
 from settings import SETTINGS
 
@@ -36,19 +34,19 @@ def on_event(event:pg.event.Event):
         running = False
         return
 
-    # if celestial_obj isn't populated, this should only check for a mouse click
-    if not celestial_objs:
-        # add an Body if there isn't one in celestial_objs and a mouse click is detected
+    # if world.bodies isn't populated, this should only check for a mouse click
+    if not world.bodies:
+        # add an Body if there isn't one in world.bodies and a mouse click is detected
         if event.type == pg.MOUSEBUTTONDOWN:
-            celestial_objs.append(Body(STARTING_MASS, Vector(*event.pos), Vector(0, 0), "M"))
-        # stop the function, since it will throw an error with an unpopulated celestial_objs
+            world.bodies.append(Body(STARTING_MASS, Vector(*event.pos), Vector(0, 0), "M"))
+        # stop the function, since it will throw an error with an unpopulated world.bodies
         return
 
-    last_obj = celestial_objs[-1] # the last Body appended to celestial_objs
+    last_obj = world.bodies[-1] # the last Body appended to world.bodies
 
-    # create a new object if there isn't one being created and add it to celestial_objs
+    # create a new object if there isn't one being created and add it to world.bodies
     if event.type == pg.MOUSEBUTTONDOWN and last_obj.status in ["O", "F"]:
-        celestial_objs.append(Body(STARTING_MASS, Vector(*event.pos), Vector(0, 0), "M"))
+        world.bodies.append(Body(STARTING_MASS, Vector(*event.pos), Vector(0, 0), "M"))
 
     # changes the mass and radius of an object being added in by changing
     # it with respect to the distance between the Body and the cursor
@@ -69,40 +67,6 @@ def on_event(event:pg.event.Event):
         last_obj.velocity = dist * VELOCITY_CONST
         last_obj.status = "O"
 
-def calculate_mvt(delta_time:float):
-    '''
-    changes the position of each object by calculating the accel
-    caused by every other object, summing the accels, and then
-    calculating velocity and changing position
-    '''
-    # calculate gravitational acceleration between each pair of Bodies
-    for i in range(len(celestial_objs) - 1):
-        for j in range(i + 1, len(celestial_objs)):
-            force = celestial_objs[i].calc_grav_force(celestial_objs[j])
-            celestial_objs[i].accel += force / celestial_objs[i].mass
-            celestial_objs[j].accel += -force / celestial_objs[j].mass
-
-    # once the accels for all Objs are calculated, move them all
-    # this is separated from the main loop because moving the objects
-    # as calculating the motions of the other objects would change the calculations
-    for obj in celestial_objs:
-        obj.change_velocity(delta_time)
-        obj.move(delta_time)
-        obj.accel = Vector(0, 0)
-
-def display():
-    '''
-    displays everything in the pygame window, including the motion
-    of the Objs
-    '''
-    screen.blit(background, (0, 0)) # draws background every frame to reset screen
-
-    # draws each Body in celestial_objs
-    for obj in celestial_objs:
-        obj.draw(screen)
-
-    pg.display.flip() # display everything on the screen
-
 def simulate():
     '''
     actually simulates the motion of the Objs, by calculating accel,
@@ -118,10 +82,10 @@ def simulate():
             on_event(event)
 
         # calculate motion of the Objs
-        calculate_mvt(delta_time)
+        world.step(delta_time)
 
         # and then display them on the screen
-        display()
+        world.display(screen, background)
 
     # quit pygame when the simulation is no longer running
     pg.quit()
@@ -136,7 +100,7 @@ def create_obj_circle(num:int, radius:int, center:tuple, mass:int=200, spd:float
         angle = i * 2 * pi / num # angle of the object in radians
         pos = [center[0] + (radius * cos(angle)), center[1] + (radius * sin(angle))]
         vel = [spd * -sin(angle), spd * cos(angle)]
-        celestial_objs.append(Body(mass, pos, vel, state))
+        world.bodies.append(Body(mass, pos, vel, state))
 
 def world_pos():
     '''
@@ -166,7 +130,7 @@ if __name__ == "__main__":
     background = pg.image.load(BACKGROUND_IMG)
     background = pg.transform.scale(background, SCREEN_SIZE)
 
-    celestial_objs = [] # creates a list of Objs that can be iterated through to simulate gravity
+    world = World() # creates a world of Objs that can be used to simulate gravity
 
     clock = pg.time.Clock() # sets up the clock so time can be used for calculations
 
