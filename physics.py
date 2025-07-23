@@ -67,4 +67,3 @@ class Vector:
     
     def components(self):
         return [self.x, self.y]
-    

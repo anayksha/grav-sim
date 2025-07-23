@@ -9,3 +9,5 @@ the sim has been built before this git repo was created and has simply been expa
 ## Acknowledgements
 
 Space Mono is a font by Colophon Foundry for Google Design (https://github.com/googlefonts/spacemono) licensed under the [SIL Open Font License v1.1](https://openfontlicense.org/open-font-license-official-text/)
+
+Thx to [JoelBiswas](https://github.com/JoelBiswas) for some of the physics behind collision resolution

@@ -14,7 +14,6 @@ TRAIL_COLOR = SETTINGS["trail"]["TRAIL_COLOR"]
 TRAIL_START_WIDTH = SETTINGS["trail"]["TRAIL_START_WIDTH"]
 TRAIL_END_WIDTH = SETTINGS["trail"]["TRAIL_END_WIDTH"]
 
-COLLISION_CONST = SETTINGS["physics"]["COLLISION_CONST"]
 GRAV_CONST = SETTINGS["physics"]["GRAV_CONST"]
 SIZE_CONST = SETTINGS["physics"]["SIZE_CONST"]
 
@@ -103,26 +102,7 @@ class Body:
         self.trail = Trail(TRAIL_LEN, TRAIL_COLOR, TRAIL_START_WIDTH, TRAIL_END_WIDTH)
 
     def calc_grav_force(self, other:"Body") -> Vector:
-        '''
-        Calculates the acceleration one object faces due to the gravitational force
-        between itself and one other object (other_obj) and then returns that
-        '''
-        # if the Body's status isn't operational, or other_obj is new and its status is
-        # setting mass or setting velocity, the Body shouldn't accelerate
-        if self.status != "O" or other.status in ["M", "V"]:
-            return Vector(0, 0)
-
-        # calculates horizontal, vertical, and actual distance between the 2 Body to calculate accel
-        dist = other.pos - self.pos
-
-        # only force is contact force if the 2 objects are inside each other
-        if dist.magnitude < (self.dia/2 + other.dia/2):
-            # random aah formula for contact acceleration as a function of distance the objs are inside eachother
-            accel_magnitude = -COLLISION_CONST * (self.dia/2 + other.dia/2 - dist.magnitude)**2
-            return Vector(accel_magnitude, dist.angle, input_angle=True)
-
-        # uses an expression created from gravitation formula and F = ma to determine acceleration
-        return Vector(GRAV_CONST * self.mass * other.mass / dist.magnitude**2, dist.angle, input_angle=True)
+        pass
 
     def change_velocity(self, delta_time:float):
         '''Changes self.velocity in place using self.accel and change in time'''
