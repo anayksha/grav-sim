@@ -52,13 +52,13 @@ class World:
 
         # relative velocity
         rel_vel = body1.velocity - body2.velocity
-        collision_angle = atan2(*(body1.pos - body2.pos).components()[::-1])   
+        normal = Vector(1, atan2(*(body2.pos - body1.pos).components()[::-1]), input_angle=True)
 
-        impulse = rel_vel * (1 + RESTITUTION_COEFF) * cos(collision_angle)
+        impulse = (rel_vel * -(1 + RESTITUTION_COEFF)).dot(normal)
         impulse /= (1 / body1.mass) + (1 / body2.mass)
 
-        body1.velocity += impulse / body1.mass
-        body2.velocity -= impulse / body2.mass
+        body1.velocity += normal * (impulse / body1.mass)
+        body2.velocity -= normal * (impulse / body2.mass)
         print(time)
         body1.move(delta_time + time)
         body2.move(delta_time + time)
@@ -85,7 +85,8 @@ class World:
         '''
         # if the Body's status isn't operational, or other_obj is new and its status is
         # setting mass or setting velocity, the Body shouldn't accelerate
-        if body1.status in ["M", "V"] or body2.status in ["M", "V"]:
+        if body1.status in ["M", "V"] or body2.status in ["M", "V"] or \
+        (body1.pos - body2.pos).magnitude <= (body1.dia + body2.dia) / 2:
             return Vector(0, 0)
 
         # calculates horizontal, vertical, and actual distance between the 2 Body to calculate accel
