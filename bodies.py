@@ -2,7 +2,7 @@ from math import sqrt
 import random
 import pygame as pg
 
-from physics import Vector
+from vector import Vector
 from window import Window
 
 from settings import SETTINGS
@@ -103,9 +103,6 @@ class Body:
 
         self.trail = Trail(TRAIL_LEN, TRAIL_COLOR, TRAIL_START_WIDTH, TRAIL_END_WIDTH)
 
-    def calc_grav_force(self, other:"Body") -> Vector:
-        pass
-
     def change_velocity(self, delta_time:float):
         '''Changes self.velocity in place using self.accel and change in time'''
         self.velocity += self.accel * delta_time
@@ -130,7 +127,7 @@ class Body:
         font_surf = FONT.render(obj_attribute, True, FONT_COLOR) # a pygame surface of the text
         # calculates where the center of the text should be
         wdw_pos = window.world_to_window(self.pos)
-        text_coords = (wdw_pos.x, wdw_pos.y + self.dia/2 + TEXT_OFFSET)
+        text_coords = (wdw_pos.x, wdw_pos.y + self.dia*window.zoom_amt/2 + TEXT_OFFSET)
         surf.blit(font_surf, center_surf(font_surf, text_coords)) # blits the text onto the screen
 
     def update_surf(self, zoom:float):
@@ -151,7 +148,7 @@ class Body:
             self.surf = pg.surface.Surface((wdw_dia, wdw_dia), pg.SRCALPHA)
             pg.draw.circle(self.surf, self.icon, (wdw_dia/2, wdw_dia/2), wdw_dia/2)
 
-    def draw(self, surf:pg.surface.Surface, window:Window):
+    def draw(self, surf:pg.surface.Surface, window:Window, disp_vects:bool):
         '''
         draws the celestial object and it's trail onto the pygame display, as well as mass or
         initial velocity if the Body is being added to the simulation
@@ -163,6 +160,10 @@ class Body:
         # draws the Body, regardless of its status
         surf.blit(self.surf, center_surf(self.surf, wdw_pos.components()))
 
+        if disp_vects:
+            self.accel.draw(surf, self.pos, [255, 0, 0], window)
+            self.velocity.draw(surf, self.pos, [0, 255, 255], window)
+        
         # if the Body's mass is being set
         if self.status == "M":
             mass = f"{self.mass:.1f} kg" # rounds mass and turns it to a string w/ units

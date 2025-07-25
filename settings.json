@@ -13,7 +13,7 @@
         "SCREEN_SIZE": [1600, 900], // pygame window size
         "WINDOW_TITLE": "Gravity Simulator", // pygame window title
         "BACKGROUND_IMG": "assets\\stars.png", // filepath of background img of sim
-        "MIN_ZOOM": 0.6,
+        "MIN_ZOOM": 0.35,
         "MAX_ZOOM": 1.5,
         "ZOOM_INCREMENT": 0.1, // amt of zoom to change with 
         "PAN_INCREMENT": 10 // px to pan on with wasd
@@ -39,13 +39,23 @@
         // images and rgb triplets can be intermixed here
         "BODY_ICON_SET": [
             "assets\\lebron.png",
-            [0, 255, 255]
+            [255, 25, 0],
+            [255, 136, 0],
+            [255, 250, 0],
+            [0, 255, 46],
+            [0, 255, 165],
+            [0, 221, 255],
+            [5, 126, 255],
+            [153, 0, 255],
+            [255, 0, 140]
         ],
         // thickness and color of the line that shows the direction
         // of a Body's initial velocity when creating it
         "VELOCITY_LINE_COLOR": [255, 255, 255],
         "VELOCITY_LINE_THICKNESS": 2,
-        "SIM_WIDTH": 3200,
-        "SIM_HEIGHT": 1800
+        "SIM_WIDTH": 4800,
+        "SIM_HEIGHT": 2700,
+        "VECT_PX_PER_UNIT": 0.5,
+        "VECT_HEAD_LEN": 7
     }
 }

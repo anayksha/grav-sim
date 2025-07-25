@@ -1,7 +1,7 @@
 from math import sqrt, cos, atan2
 import pygame as pg
 
-from physics import Vector
+from vector import Vector
 from bodies import Body
 
 from settings import SETTINGS
@@ -30,7 +30,8 @@ class World:
         self.bodies.append(body)
 
     def check_collision(self, body1:Body, body2:Body):
-        return (body2.pos - body1.pos).magnitude <= (body1.dia + body2.dia)/2
+        return body1.status not in ["M", "V"] and body2.status not in ["M", "V"] and \
+        (body2.pos - body1.pos).magnitude <= (body1.dia + body2.dia)/2
 
     def resolve_collisions(self, body1:Body, body2:Body, delta_time):
         '''
@@ -66,8 +67,11 @@ class World:
         impulse = (rel_vel * -(1 + RESTITUTION_COEFF)).dot(normal)
         impulse /= (1 / body1.mass) + (1 / body2.mass)
 
-        body1.velocity += normal * (impulse / body1.mass)
-        body2.velocity -= normal * (impulse / body2.mass)
+        body1.accel += normal * (impulse / delta_time / body1.mass)
+        body2.accel -= normal * (impulse / delta_time / body2.mass)
+
+        body1.change_velocity(delta_time)
+        body2.change_velocity(delta_time)
 
         body1.move(delta_time + time)
         body2.move(delta_time + time)
@@ -109,6 +113,10 @@ class World:
         caused by every other object, summing the accels, and then
         calculating velocity and changing position
         '''
+
+        for obj in self.bodies:
+            obj.accel = Vector(0, 0)
+
         # calculate gravitational acceleration between each pair of Bodies
         for i in range(len(self.bodies) - 1):
             for j in range(i + 1, len(self.bodies)):
@@ -122,7 +130,6 @@ class World:
         for obj in self.bodies:
             obj.change_velocity(delta_time)
             obj.move(delta_time)
-            obj.accel = Vector(0, 0)
         
         # check for collisions even after some are resolved bc of overlap and stuff
         checking_for_collisions = True
@@ -138,7 +145,7 @@ class World:
         
         self.remove_far_bodies()
 
-    def display(self, screen:pg.surface.Surface, background:pg.surface.Surface, window:"Window"):
+    def display(self, screen:pg.surface.Surface, background:pg.surface.Surface, window:"Window", disp_vects:bool): # type: ignore
         '''
         displays everything in the pygame window, including the motion
         of the Objs
@@ -147,6 +154,6 @@ class World:
 
         # draws each Body in world.bodies
         for obj in self.bodies:
-            obj.draw(screen, window)
+            obj.draw(screen, window, disp_vects)
 
         pg.display.flip() # display everything on the screen

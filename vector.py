@@ -1,4 +1,10 @@
-from math import hypot, sin, cos, atan2
+from math import hypot, sin, cos, atan2, pi
+import pygame as pg
+
+from settings import SETTINGS
+
+VECT_PX_PER_UNIT = SETTINGS["misc"]["VECT_PX_PER_UNIT"]
+VECT_HEAD_LEN = SETTINGS["misc"]["VECT_HEAD_LEN"]
 
 class Vector:
     '''
@@ -70,3 +76,12 @@ class Vector:
     
     def components(self):
         return [self.x, self.y]
+
+    def draw(self, surf:pg.surface.Surface, pos:"Vector", color:list, window:"Window"): # type: ignore
+        wdw_pos = window.world_to_window(pos)
+        wdw_end_pos = wdw_pos + self * VECT_PX_PER_UNIT * window.zoom_amt
+        pg.draw.line(surf, color, wdw_pos.components(), wdw_end_pos.components(), width=2)
+        left_head_end = wdw_end_pos + Vector(VECT_HEAD_LEN * window.zoom_amt, self.angle + 3*pi/4, input_angle=True)
+        right_head_end = wdw_end_pos + Vector(VECT_HEAD_LEN * window.zoom_amt, self.angle - 3*pi/4, input_angle=True)
+        pg.draw.line(surf, color, wdw_end_pos.components(), left_head_end.components(), width=2)
+        pg.draw.line(surf, color, wdw_end_pos.components(), right_head_end.components(), width=2)

@@ -1,4 +1,4 @@
-from physics import Vector
+from vector import Vector
 from settings import SETTINGS
 
 SCREEN_SIZE = SETTINGS["window"]["SCREEN_SIZE"]
@@ -50,7 +50,7 @@ class Window:
         if top_bound > MAX_POS_Y:
             self._pan += Vector(0, MAX_POS_Y - top_bound)
 
-    def zoom(self, amt:float, world:"World"):
+    def zoom(self, amt:float, world:"World"): # type: ignore
         # calculate bounds and clamp zoom
         self._zoom = max(MIN_ZOOM, min(MAX_ZOOM, self._zoom + amt))
 

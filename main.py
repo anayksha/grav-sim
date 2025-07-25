@@ -20,10 +20,10 @@ TODO:
 - make trail time based instead of step based
 - update comments
 '''
-from math import sin, cos, pi
+from math import sin, cos, pi, sqrt
 import pygame as pg
 
-from physics import Vector
+from vector import Vector
 from bodies import Body
 from world import World
 from window import Window
@@ -36,6 +36,8 @@ def on_event(event:pg.event.Event):
     A function that performs a specific action for specific events inputted
     '''
     global running
+    global disp_vects
+
     # stop running quit if the pygame window is closed
     if event.type == pg.QUIT:
         running = False
@@ -43,13 +45,21 @@ def on_event(event:pg.event.Event):
 
     if event.type == pg.MOUSEWHEEL:
         window.zoom(event.y * ZOOM_INCREMENT, world)
+        return
+    
+    if event.type == pg.KEYDOWN:
+        if event.unicode == "v":
+            disp_vects = not disp_vects
+        print(disp_vects)
+        print(event)
+        return
 
     # if world.bodies isn't populated, this should only check for a mouse click
     if not world.bodies:
         # add an Body if there isn't one in world.bodies and a mouse click is detected
         if event.type == pg.MOUSEBUTTONDOWN and event.button not in [4, 5]:
             wld_pos = window.window_to_world(Vector(*event.pos))
-            world.bodies.append(Body(STARTING_MASS, wld_pos, Vector(0, 0), "M"))
+            world.add_body(Body(STARTING_MASS, wld_pos, Vector(0, 0), "M"))
         # stop the function, since it will throw an error with an unpopulated world.bodies
         return
 
@@ -58,7 +68,8 @@ def on_event(event:pg.event.Event):
     # create a new object if there isn't one being created and add it to world.bodies
     if event.type == pg.MOUSEBUTTONDOWN and last_obj.status in ["O", "F"] and event.button not in [4, 5]:
         wld_pos = window.window_to_world(Vector(*event.pos))
-        world.bodies.append(Body(STARTING_MASS, wld_pos, Vector(0, 0), "M"))
+        world.add_body(Body(STARTING_MASS, wld_pos, Vector(0, 0), "M"))
+        return
 
     # changes the mass and radius of an object being added in by changing
     # it with respect to the distance between the Body and the cursor
@@ -70,11 +81,13 @@ def on_event(event:pg.event.Event):
         else:
             last_obj.mass = dist.magnitude * MASS_CONST
         last_obj.update_surf(window.zoom_amt)
+        return
 
     # If the last obj is an Body that was setting its mass and left click is released,
     # change its status to setting velocity
     elif event.type == pg.MOUSEBUTTONUP and last_obj.status == "M" and event.button not in [4, 5]:
         last_obj.status = "V"
+        return
 
     # set the last_obj's velocity with respect to the distance between the mouse and the cursor
     # if the last_obj's mode was setting velocity. Also change the Body's status to operational
@@ -82,6 +95,24 @@ def on_event(event:pg.event.Event):
         dist = Vector(*event.pos) - window.world_to_window(last_obj.pos)
         last_obj.velocity = dist * VELOCITY_CONST
         last_obj.status = "O"
+        return
+
+def manage_keyboard_input():
+    '''
+    used to check for key presses;
+    cant put this stuff in on event bc pygame only sends one event when
+    a key is pressed and held
+    '''
+    keys = pg.key.get_pressed()
+
+    if keys[pg.K_w]:
+        window.pan(Vector(0, -PAN_INCREMENT/window.zoom_amt))
+    if keys[pg.K_a]:
+        window.pan(Vector(-PAN_INCREMENT/window.zoom_amt, 0))
+    if keys[pg.K_s]:
+        window.pan(Vector(0, PAN_INCREMENT/window.zoom_amt))
+    if keys[pg.K_d]:
+        window.pan(Vector(PAN_INCREMENT/window.zoom_amt, 0))
 
 def simulate():
     '''
@@ -98,21 +129,13 @@ def simulate():
             on_event(event)
 
         # TODO: move this somewhere better
-        keys = pg.key.get_pressed()
-        if keys[pg.K_w]:
-            window.pan(Vector(0, -PAN_INCREMENT/window.zoom_amt))
-        if keys[pg.K_a]:
-            window.pan(Vector(-PAN_INCREMENT/window.zoom_amt, 0))
-        if keys[pg.K_s]:
-            window.pan(Vector(0, PAN_INCREMENT/window.zoom_amt))
-        if keys[pg.K_d]:
-            window.pan(Vector(PAN_INCREMENT/window.zoom_amt, 0))
+        manage_keyboard_input()
 
         # calculate motion of the Objs
         world.step(delta_time)
 
         # and then display them on the screen
-        world.display(screen, background, window)
+        world.display(screen, background, window, disp_vects)
 
     # quit pygame when the simulation is no longer running
     pg.quit()
@@ -138,6 +161,7 @@ def world_pos():
 
 if __name__ == "__main__":
 
+    GRAV_CONST = SETTINGS["physics"]["GRAV_CONST"]
     MASS_CONST = SETTINGS["physics"]["MASS_CONST"]
     STARTING_MASS = SETTINGS["physics"]["STARTING_MASS"]
     VELOCITY_CONST = SETTINGS["physics"]["VELOCITY_CONST"]
@@ -164,6 +188,7 @@ if __name__ == "__main__":
 
     clock = pg.time.Clock() # sets up the clock so time can be used for calculations
 
+    disp_vects = False
     running = True # setting running to True allows for the simulation to start
 
     simulate()
