@@ -1,7 +1,9 @@
 from math import sqrt
 import random
 import pygame as pg
+
 from physics import Vector
+from window import Window
 
 from settings import SETTINGS
 
@@ -54,12 +56,12 @@ class Trail:
         if len(self.trail_points) > self.length:
             self.trail_points.pop()
 
-    def draw_trail(self, surface:pg.surface.Surface):
+    def draw_trail(self, surface:pg.surface.Surface, window:Window):
         '''draws the trail onto the given surface'''
         for i in range(len(self.trail_points) - 1):
-            start = self.trail_points[i]
-            end = self.trail_points[i+1]
-            pg.draw.line(surface, self.color, start, end, int(self.start_width - i*self.width_increment))
+            start = window.world_to_window(Vector(*self.trail_points[i]))
+            end = window.world_to_window(Vector(*self.trail_points[i+1]))
+            pg.draw.line(surface, self.color, start.components(), end.components(), int(self.start_width - i*self.width_increment))
 
 class Body:
     '''
@@ -97,7 +99,7 @@ class Body:
         # assumes each Body is made from the same material at a specific density so that
         # each kg of mass corresponds to a certain amount of surface area of the Body
         # Since radius and surface area are intertwined, the mass of the Body affects its radius
-        self.update_surf()
+        self.update_surf(0.1)
 
         self.trail = Trail(TRAIL_LEN, TRAIL_COLOR, TRAIL_START_WIDTH, TRAIL_END_WIDTH)
 
@@ -119,7 +121,7 @@ class Body:
 
         self.trail.update_trail(self.pos.components())
 
-    def display_attribute(self, surf, obj_attribute:str):
+    def display_attribute(self, surf, obj_attribute:str, window:Window):
         '''
         meant to display an attribute below an Body
 
@@ -127,10 +129,11 @@ class Body:
         '''
         font_surf = FONT.render(obj_attribute, True, FONT_COLOR) # a pygame surface of the text
         # calculates where the center of the text should be
-        text_coords = (self.pos.x, self.pos.y + self.dia/2 + TEXT_OFFSET)
+        wdw_pos = window.world_to_window(self.pos)
+        text_coords = (wdw_pos.x, wdw_pos.y + self.dia/2 + TEXT_OFFSET)
         surf.blit(font_surf, center_surf(font_surf, text_coords)) # blits the text onto the screen
 
-    def update_surf(self):
+    def update_surf(self, zoom:float):
         '''
         updates the radius of the Body based on its mass
 
@@ -138,40 +141,45 @@ class Body:
         '''
         self.dia = sqrt(self.mass) * SIZE_CONST
 
+        # diameter in window, adjusted for zoom
+        wdw_dia = self.dia * zoom
+
         if type(self.icon) is str: # assume its an image file
             self.surf = pg.image.load(self.icon)
-            self.surf = pg.transform.scale(self.surf, (self.dia, self.dia))
+            self.surf = pg.transform.scale(self.surf, (wdw_dia, wdw_dia))
         else: # assuming its an rgb triplet
-            self.surf = pg.surface.Surface((self.dia, self.dia), pg.SRCALPHA)
-            pg.draw.circle(self.surf, self.icon, (self.dia/2, self.dia/2), self.dia/2)
+            self.surf = pg.surface.Surface((wdw_dia, wdw_dia), pg.SRCALPHA)
+            pg.draw.circle(self.surf, self.icon, (wdw_dia/2, wdw_dia/2), wdw_dia/2)
 
-    def draw(self, surf:pg.surface.Surface):
+    def draw(self, surf:pg.surface.Surface, window:Window):
         '''
         draws the celestial object and it's trail onto the pygame display, as well as mass or
         initial velocity if the Body is being added to the simulation
         '''
-        self.trail.draw_trail(surf)
+        self.trail.draw_trail(surf, window)
+
+        wdw_pos = window.world_to_window(self.pos)
 
         # draws the Body, regardless of its status
-        surf.blit(self.surf, center_surf(self.surf, self.pos.components()))
+        surf.blit(self.surf, center_surf(self.surf, wdw_pos.components()))
 
         # if the Body's mass is being set
         if self.status == "M":
             mass = f"{self.mass:.1f} kg" # rounds mass and turns it to a string w/ units
-            self.display_attribute(surf, mass)
+            self.display_attribute(surf, mass, window)
 
         # if the Body's velocity is being set
         elif self.status == "V":
             # gets mouse pos for velocity calculations and drawing a line
             mouse_pos = pg.mouse.get_pos()
 
-            dist = Vector(*mouse_pos) - self.pos
+            dist = Vector(*mouse_pos) - wdw_pos
 
             velocity = f"{dist.magnitude * VELOCITY_CONST:.2f} m/s"
-            self.display_attribute(surf, velocity)
+            self.display_attribute(surf, velocity, window)
 
             # draws a line to display the direction of the velocity
-            pg.draw.line(surf, VELOCITY_LINE_COLOR, self.pos.components(), mouse_pos, VELOCITY_LINE_THICKNESS)
+            pg.draw.line(surf, VELOCITY_LINE_COLOR, wdw_pos.components(), mouse_pos, VELOCITY_LINE_THICKNESS)
 
 # TODO: find a better place to put this
 def center_surf(surface:pg.surface.Surface, coords:tuple) -> tuple:

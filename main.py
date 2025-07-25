@@ -13,6 +13,12 @@ To create a celestial object, click, hold, and drag to add one and set its mass.
 desired mass has been set, release the left mouse button. To set the object's velocity, click
 anywhere on the screen. The line shown while changing the object's velocity shows its
 direction, and its length shows its speed.
+
+TODO:
+- visual velocity and acceleration vectors
+- zooming and panning
+- make trail time based instead of step based
+- update comments
 '''
 from math import sin, cos, pi
 import pygame as pg
@@ -20,6 +26,7 @@ import pygame as pg
 from physics import Vector
 from bodies import Body
 from world import World
+from window import Window
 
 from settings import SETTINGS
 
@@ -34,36 +41,45 @@ def on_event(event:pg.event.Event):
         running = False
         return
 
+    if event.type == pg.MOUSEWHEEL:
+        window.zoom(event.y * ZOOM_INCREMENT, world)
+
     # if world.bodies isn't populated, this should only check for a mouse click
     if not world.bodies:
         # add an Body if there isn't one in world.bodies and a mouse click is detected
-        if event.type == pg.MOUSEBUTTONDOWN:
-            world.bodies.append(Body(STARTING_MASS, Vector(*event.pos), Vector(0, 0), "M"))
+        if event.type == pg.MOUSEBUTTONDOWN and event.button not in [4, 5]:
+            wld_pos = window.window_to_world(Vector(*event.pos))
+            world.bodies.append(Body(STARTING_MASS, wld_pos, Vector(0, 0), "M"))
         # stop the function, since it will throw an error with an unpopulated world.bodies
         return
 
     last_obj = world.bodies[-1] # the last Body appended to world.bodies
 
     # create a new object if there isn't one being created and add it to world.bodies
-    if event.type == pg.MOUSEBUTTONDOWN and last_obj.status in ["O", "F"]:
-        world.bodies.append(Body(STARTING_MASS, Vector(*event.pos), Vector(0, 0), "M"))
+    if event.type == pg.MOUSEBUTTONDOWN and last_obj.status in ["O", "F"] and event.button not in [4, 5]:
+        wld_pos = window.window_to_world(Vector(*event.pos))
+        world.bodies.append(Body(STARTING_MASS, wld_pos, Vector(0, 0), "M"))
 
     # changes the mass and radius of an object being added in by changing
     # it with respect to the distance between the Body and the cursor
     elif event.type == pg.MOUSEMOTION and last_obj.status == "M":
-        dist = Vector(*event.pos) - last_obj.pos
-        last_obj.mass = dist.magnitude * MASS_CONST
-        last_obj.update_surf()
+        dist = Vector(*event.pos) - window.world_to_window(last_obj.pos)
+        # needed cause mouse can be exactly at the position of body, resulting in a distance of 0
+        if dist.magnitude == 0:
+            last_obj.mass = STARTING_MASS
+        else:
+            last_obj.mass = dist.magnitude * MASS_CONST
+        last_obj.update_surf(window.zoom_amt)
 
     # If the last obj is an Body that was setting its mass and left click is released,
     # change its status to setting velocity
-    elif event.type == pg.MOUSEBUTTONUP and last_obj.status == "M":
+    elif event.type == pg.MOUSEBUTTONUP and last_obj.status == "M" and event.button not in [4, 5]:
         last_obj.status = "V"
 
     # set the last_obj's velocity with respect to the distance between the mouse and the cursor
     # if the last_obj's mode was setting velocity. Also change the Body's status to operational
-    elif event.type == pg.MOUSEBUTTONDOWN and last_obj.status == "V":
-        dist = Vector(*event.pos) - last_obj.pos
+    elif event.type == pg.MOUSEBUTTONDOWN and last_obj.status == "V" and event.button not in [4, 5]:
+        dist = Vector(*event.pos) - window.world_to_window(last_obj.pos)
         last_obj.velocity = dist * VELOCITY_CONST
         last_obj.status = "O"
 
@@ -81,11 +97,22 @@ def simulate():
         for event in pg.event.get():
             on_event(event)
 
+        # TODO: move this somewhere better
+        keys = pg.key.get_pressed()
+        if keys[pg.K_w]:
+            window.pan(Vector(0, -PAN_INCREMENT/window.zoom_amt))
+        if keys[pg.K_a]:
+            window.pan(Vector(-PAN_INCREMENT/window.zoom_amt, 0))
+        if keys[pg.K_s]:
+            window.pan(Vector(0, PAN_INCREMENT/window.zoom_amt))
+        if keys[pg.K_d]:
+            window.pan(Vector(PAN_INCREMENT/window.zoom_amt, 0))
+
         # calculate motion of the Objs
         world.step(delta_time)
 
         # and then display them on the screen
-        world.display(screen, background)
+        world.display(screen, background, window)
 
     # quit pygame when the simulation is no longer running
     pg.quit()
@@ -120,6 +147,8 @@ if __name__ == "__main__":
     SCREEN_SIZE = SETTINGS["window"]["SCREEN_SIZE"]
     WINDOW_TITLE = SETTINGS["window"]["WINDOW_TITLE"]
     BACKGROUND_IMG = SETTINGS["window"]["BACKGROUND_IMG"]
+    ZOOM_INCREMENT = SETTINGS["window"]["ZOOM_INCREMENT"]
+    PAN_INCREMENT = SETTINGS["window"]["PAN_INCREMENT"]
 
     # sets up pygame
     pg.init()
@@ -131,6 +160,7 @@ if __name__ == "__main__":
     background = pg.transform.scale(background, SCREEN_SIZE)
 
     world = World() # creates a world of Objs that can be used to simulate gravity
+    window = Window() # create window to manage zoom, panning, and coordinate conversion
 
     clock = pg.time.Clock() # sets up the clock so time can be used for calculations
 

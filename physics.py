@@ -29,7 +29,7 @@ class Vector:
     def magnitude(self, magnitude):
         angle = self.angle
         self.x = magnitude * cos(angle)
-        self.y = magnitude * cos(angle)
+        self.y = magnitude * sin(angle)
 
     @angle.setter
     def angle(self, angle):
@@ -51,6 +51,9 @@ class Vector:
     
     def __neg__(self):
         return Vector(-self.x, -self.y)
+    
+    def __str__(self):
+        return f"Mag: {self.magnitude}\tAng: {self.angle}\tX: {self.x}\tY: {self.y}"
 
     def cross(self, other:"Vector") -> float:
         '''

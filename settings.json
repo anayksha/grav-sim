@@ -4,14 +4,19 @@
         "SIZE_CONST": 2, // how much a Body's mass affects its size
         "MASS_CONST": 4.6, // how much user input affects a Body's mass
         "STARTING_MASS": 20, // initial mass of a newly created Body
-        "VELOCITY_CONST": 0.9, // how much user input affects a Body's initial velocity
-        "RESTITUTION_COEFF": 1 // determines how much energy is conserved between collisions; 1 for fully elastic, 0 for completely inelastic
+        "VELOCITY_CONST": 0.6, // how much user input affects a Body's initial velocity
+        "RESTITUTION_COEFF": 1, // determines how much energy is conserved between collisions; 1 for fully elastic, 0 for completely inelastic
+        "GRAV_THRESHOLD": 1 // bodies as far as this value or closer will not have gravitational force between them calculated 
     },
     "window": {
         "FPS": 60, // frames per second the sim runs at; set to 0 for unlimited
         "SCREEN_SIZE": [1600, 900], // pygame window size
         "WINDOW_TITLE": "Gravity Simulator", // pygame window title
-        "BACKGROUND_IMG": "assets\\stars.png" // filepath of background img of sim 
+        "BACKGROUND_IMG": "assets\\stars.png", // filepath of background img of sim
+        "MIN_ZOOM": 0.6,
+        "MAX_ZOOM": 1.5,
+        "ZOOM_INCREMENT": 0.1, // amt of zoom to change with 
+        "PAN_INCREMENT": 10 // px to pan on with wasd
     },
     "font": {
         "FONT_FILE": "assets\\SpaceMono-Regular.ttf",
@@ -39,6 +44,8 @@
         // thickness and color of the line that shows the direction
         // of a Body's initial velocity when creating it
         "VELOCITY_LINE_COLOR": [255, 255, 255],
-        "VELOCITY_LINE_THICKNESS": 2
+        "VELOCITY_LINE_THICKNESS": 2,
+        "SIM_WIDTH": 3200,
+        "SIM_HEIGHT": 1800
     }
 }
