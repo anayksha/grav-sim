@@ -50,8 +50,6 @@ def on_event(event:pg.event.Event):
     if event.type == pg.KEYDOWN:
         if event.unicode == "v":
             disp_vects = not disp_vects
-        print(disp_vects)
-        print(event)
         return
 
     # if world.bodies isn't populated, this should only check for a mouse click

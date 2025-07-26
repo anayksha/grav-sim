@@ -150,7 +150,11 @@ class World:
         displays everything in the pygame window, including the motion
         of the Objs
         '''
-        screen.blit(background, (0, 0)) # draws background every frame to reset screen
+        scaled_bg = pg.transform.scale(background, [window.zoom_amt * val for val in background.get_size()])
+        for x in range(int(MIN_POS_X), int(MAX_POS_X), background.get_width()):
+            for y in range(int(MIN_POS_Y), int(MAX_POS_Y), background.get_height()):
+                # draws background every frame to reset screen
+                screen.blit(scaled_bg, window.world_to_window(Vector(x, y)).components())
 
         # draws each Body in world.bodies
         for obj in self.bodies:

@@ -24,7 +24,7 @@ FONT_SIZE = SETTINGS["font"]["FONT_SIZE"]
 FONT_COLOR = SETTINGS["font"]["FONT_COLOR"]
 TEXT_OFFSET = SETTINGS["font"]["TEXT_OFFSET"]
 
-# find a better way to share settings across scripts
+# TODO: find a better way to share settings across scripts
 pg.font.init()
 FONT = pg.font.Font(FONT_FILE, FONT_SIZE)
 
