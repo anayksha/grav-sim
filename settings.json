@@ -1,42 +1,37 @@
 {
     "physics": {
         "GRAV_CONST": 1000, // how strong gravity is
-        "SIZE_CONST": 2, // how much a Body's mass affects its size
-        "MASS_CONST": 4.6, // how much user input affects a Body's mass
-        "STARTING_MASS": 20, // initial mass of a newly created Body
-        "VELOCITY_CONST": 0.6, // how much user input affects a Body's initial velocity
         "RESTITUTION_COEFF": 1, // determines how much energy is conserved between collisions; 1 for fully elastic, 0 for completely inelastic
-        "GRAV_THRESHOLD": 1 // bodies as far as this value or closer will not have gravitational force between them calculated 
+        "GRAV_THRESHOLD": 1, // bodies as far apart as this value or closer will not have gravitational force between them calculated
+        "SIM_WIDTH": 4800, // width of simulation world
+        "SIM_HEIGHT": 2700 // height of simulation world 
     },
     "window": {
         "FPS": 60, // frames per second the sim runs at; set to 0 for unlimited
         "SCREEN_SIZE": [1600, 900], // pygame window size
         "WINDOW_TITLE": "Gravity Simulator", // pygame window title
-        "BACKGROUND_IMG": "assets\\stars.png", // filepath of background img of sim
-        "MIN_ZOOM": 0.35,
-        "MAX_ZOOM": 1.5,
-        "ZOOM_INCREMENT": 0.1, // amt of zoom to change with 
-        "PAN_INCREMENT": 10 // px to pan on with wasd
+        "BACKGROUND_IMG": "assets\\stars.png", // filepath of background img
+        "MIN_ZOOM": 0.35, // minimum amount the zoom can be
+        "MAX_ZOOM": 1.5, // maximum amount the zoom can be
+        "ZOOM_INCREMENT": 0.1, // amt of zoom to increment by with scrolling
+        "PAN_INCREMENT": 10 // amount of px to pan in pygame window with wasd
     },
     "font": {
         "FONT_FILE": "assets\\SpaceMono-Regular.ttf",
         "FONT_SIZE": 16,
-        "FONT_COLOR": [255, 255, 255],
-        // when creating a Body, specifies how far down the mass or velocity label
-        // appears below the bottom edge of the Body
-        "TEXT_OFFSET": 14
+        "FONT_COLOR": [255, 255, 255]
     },
     "trail": {
-        "TRAIL_LEN": 40, // # of points in a Body's trail 
+        "TRAIL_LEN": 40, // num of points in a Body's trail 
         "TRAIL_COLOR": [255, 255, 255],
         "TRAIL_START_WIDTH": 6,
         "TRAIL_END_WIDTH": 1
     },
-    "misc": {
+    "other_visuals": {
         // a list of image filepaths or rgb triplets that will be randomly chosen from when
         // creating a body; the body will either be an image or a circle of the color
-        // specified by the rgb triplet
-        // images and rgb triplets can be intermixed here
+        // specified by the rgb triplet.
+        // images and rgb triplets can be intermixed here btw
         "BODY_ICON_SET": [
             "assets\\lebron.png",
             [255, 25, 0],
@@ -53,9 +48,21 @@
         // of a Body's initial velocity when creating it
         "VELOCITY_LINE_COLOR": [255, 255, 255],
         "VELOCITY_LINE_THICKNESS": 2,
-        "SIM_WIDTH": 4800,
-        "SIM_HEIGHT": 2700,
-        "VECT_PX_PER_UNIT": 0.5,
-        "VECT_HEAD_LEN": 7
+        // when creating a Body, specifies how far down the mass or velocity label
+        // appears below the bottom edge of the Body
+        "TEXT_OFFSET": 14
+    },
+    "vector_visuals": {
+        "VECT_PX_PER_UNIT": 0.5, // how long the vector is relative to world coordinates per unit
+        "VECT_HEAD_LEN": 7, // length of line segments of vector arrowhead
+        "ACCEL_VECT_COLOR": [255, 0, 0],
+        "VELOCITY_VECT_COLOR": [0, 255, 255],
+        "VECT_THKNS": 2
+    },
+    "misc_constants": {
+        "VELOCITY_CONST": 0.6, // how much user input affects a Body's initial velocity
+        "SIZE_CONST": 2, // how much a Body's mass affects its size
+        "MASS_CONST": 4.6, // how much user input affects a Body's mass
+        "STARTING_MASS": 20 // initial mass of a newly created Body
     }
 }

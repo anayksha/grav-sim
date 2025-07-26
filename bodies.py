@@ -7,29 +7,33 @@ from window import Window
 
 from settings import SETTINGS
 
-BODY_ICON_SET = SETTINGS["misc"]["BODY_ICON_SET"]
-
-VELOCITY_CONST = SETTINGS["physics"]["VELOCITY_CONST"]
-
 TRAIL_LEN = SETTINGS["trail"]["TRAIL_LEN"]
 TRAIL_COLOR = SETTINGS["trail"]["TRAIL_COLOR"]
 TRAIL_START_WIDTH = SETTINGS["trail"]["TRAIL_START_WIDTH"]
 TRAIL_END_WIDTH = SETTINGS["trail"]["TRAIL_END_WIDTH"]
 
 GRAV_CONST = SETTINGS["physics"]["GRAV_CONST"]
-SIZE_CONST = SETTINGS["physics"]["SIZE_CONST"]
+
+VELOCITY_CONST = SETTINGS["misc_constants"]["VELOCITY_CONST"]
+SIZE_CONST = SETTINGS["misc_constants"]["SIZE_CONST"]
 
 FONT_FILE = SETTINGS["font"]["FONT_FILE"]
 FONT_SIZE = SETTINGS["font"]["FONT_SIZE"]
 FONT_COLOR = SETTINGS["font"]["FONT_COLOR"]
-TEXT_OFFSET = SETTINGS["font"]["TEXT_OFFSET"]
+
+BODY_ICON_SET = SETTINGS["other_visuals"]["BODY_ICON_SET"]
+TEXT_OFFSET = SETTINGS["other_visuals"]["TEXT_OFFSET"]
+
+ACCEL_VECT_COLOR = SETTINGS["vector_visuals"]["ACCEL_VECT_COLOR"]
+VELOCITY_VECT_COLOR = SETTINGS["vector_visuals"]["VELOCITY_VECT_COLOR"]
 
 # TODO: find a better way to share settings across scripts
+# UPDATE: I dont wanna do that
 pg.font.init()
 FONT = pg.font.Font(FONT_FILE, FONT_SIZE)
 
-VELOCITY_LINE_COLOR = SETTINGS["misc"]["VELOCITY_LINE_COLOR"]
-VELOCITY_LINE_THICKNESS = SETTINGS["misc"]["VELOCITY_LINE_THICKNESS"]
+VELOCITY_LINE_COLOR = SETTINGS["other_visuals"]["VELOCITY_LINE_COLOR"]
+VELOCITY_LINE_THICKNESS = SETTINGS["other_visuals"]["VELOCITY_LINE_THICKNESS"]
 
 class Trail:
     '''
@@ -65,7 +69,7 @@ class Trail:
 
 class Body:
     '''
-    A celestial object with mass that exerts gravitational force on other objects.
+    A rigid body with mass and the ability to move idk how do i explain this.
 
     An Body can have one of 4 statuses, operational, setting mass, setting velocity, and
     fixed. An Body with the operational status works as normal. An Body has the setting mass status
@@ -75,19 +79,7 @@ class Body:
     represented as strings, with "O", "M", "V", "F" for operational, changing mass, changing
     velocity, and fixed, respectively.
     '''
-    def __init__(self, mass:float, pos:Vector, velocity:Vector=None, status:str="O"):
-        '''
-        Initializes an Body with a bunch of properties responsible for calculating
-        the position of an Body over time as well as some visual properties
-
-        velocity, accel, and pos are 2 item lists or tuples, with item at index
-        0 being the x value and item at index 1 being the y value
-        '''
-        # necessary bc default arguments are shared by all instances of the class
-        # so when we need to change it, it changes all instances
-        if velocity is None:
-            velocity = Vector(0, 0)
-
+    def __init__(self, mass:float, pos:Vector, velocity:Vector=Vector(0, 0), status:str="O"):
         # assigns the Body all of its properties that affect its behavior
         self.mass = mass
         self.pos = pos
@@ -160,9 +152,10 @@ class Body:
         # draws the Body, regardless of its status
         surf.blit(self.surf, center_surf(self.surf, wdw_pos.components()))
 
+        # draw velocity and accel vectors if disp_vects is true
         if disp_vects:
-            self.accel.draw(surf, self.pos, [255, 0, 0], window)
-            self.velocity.draw(surf, self.pos, [0, 255, 255], window)
+            self.accel.draw(surf, self.pos, ACCEL_VECT_COLOR, window)
+            self.velocity.draw(surf, self.pos, VELOCITY_VECT_COLOR, window)
         
         # if the Body's mass is being set
         if self.status == "M":

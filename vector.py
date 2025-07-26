@@ -3,12 +3,13 @@ import pygame as pg
 
 from settings import SETTINGS
 
-VECT_PX_PER_UNIT = SETTINGS["misc"]["VECT_PX_PER_UNIT"]
-VECT_HEAD_LEN = SETTINGS["misc"]["VECT_HEAD_LEN"]
+VECT_PX_PER_UNIT = SETTINGS["vector_visuals"]["VECT_PX_PER_UNIT"]
+VECT_HEAD_LEN = SETTINGS["vector_visuals"]["VECT_HEAD_LEN"]
+VECT_THKNS = SETTINGS["vector_visuals"]["VECT_THKNS"]
 
 class Vector:
     '''
-    2D vectors
+    2D vectors yayayaya
     '''
     def __init__(self, val1:float, val2:float, input_angle:bool=False):
         '''
@@ -49,10 +50,10 @@ class Vector:
     def __sub__(self, other:"Vector") -> "Vector":
         return Vector(self.x - other.x, self.y - other.y)
 
-    def __mul__(self, other):
+    def __mul__(self, other:float):
         return Vector(self.x * other, self.y * other)
 
-    def __truediv__(self, other):
+    def __truediv__(self, other:float):
         return Vector(self.x / other, self.y / other)
     
     def __neg__(self):
@@ -69,19 +70,22 @@ class Vector:
         return self.magnitude * other.magnitude * sin(other.angle - self.angle)
 
     def dot(self, other:"Vector") -> float:
-        '''
-        dot product of 2 vectors
-        '''
+        '''dot product of 2 vectors'''
         return self.x * other.x + self.y * other.y
     
-    def components(self):
+    def components(self) -> list:
+        '''x and y components of vector as a list'''
         return [self.x, self.y]
 
     def draw(self, surf:pg.surface.Surface, pos:"Vector", color:list, window:"Window"): # type: ignore
+        '''draws a vector onto a surf'''
+        # main segment
         wdw_pos = window.world_to_window(pos)
         wdw_end_pos = wdw_pos + self * VECT_PX_PER_UNIT * window.zoom_amt
-        pg.draw.line(surf, color, wdw_pos.components(), wdw_end_pos.components(), width=2)
+        pg.draw.line(surf, color, wdw_pos.components(), wdw_end_pos.components(), width=VECT_THKNS)
+
+        # arrowhead of drawn vector
         left_head_end = wdw_end_pos + Vector(VECT_HEAD_LEN * window.zoom_amt, self.angle + 3*pi/4, input_angle=True)
         right_head_end = wdw_end_pos + Vector(VECT_HEAD_LEN * window.zoom_amt, self.angle - 3*pi/4, input_angle=True)
-        pg.draw.line(surf, color, wdw_end_pos.components(), left_head_end.components(), width=2)
-        pg.draw.line(surf, color, wdw_end_pos.components(), right_head_end.components(), width=2)
+        pg.draw.line(surf, color, wdw_end_pos.components(), left_head_end.components(), width=VECT_THKNS)
+        pg.draw.line(surf, color, wdw_end_pos.components(), right_head_end.components(), width=VECT_THKNS)

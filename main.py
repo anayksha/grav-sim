@@ -1,26 +1,13 @@
 '''
-This program uses the math and random python libraries as well as pygame,
-and the font used is from fonts.google.com
-This program was created individually.
-
-This is basically a simulation that simulates the motion of celestial objects with
-gravity in a 2D plane. This simulation uses some real formulas to simulate this motion.
-
-When run, the program prompts the user to answer whether the celestial
-objects should be neon colors. Type "yes" or "no" with the keyboard to answer.
+This is basically a simulation that simulates the motion of rigid bodies with
+gravity in a 2D plane.
 
 To create a celestial object, click, hold, and drag to add one and set its mass. When the
 desired mass has been set, release the left mouse button. To set the object's velocity, click
-anywhere on the screen. The line shown while changing the object's velocity shows its
+anywhere on the screen. The line shown while setting the object's velocity shows its
 direction, and its length shows its speed.
-
-TODO:
-- visual velocity and acceleration vectors
-- zooming and panning
-- make trail time based instead of step based
-- update comments
 '''
-from math import sin, cos, pi, sqrt
+from math import sin, cos, pi
 import pygame as pg
 
 from vector import Vector
@@ -30,13 +17,24 @@ from window import Window
 
 from settings import SETTINGS
 
+GRAV_CONST = SETTINGS["physics"]["GRAV_CONST"]
+
+MASS_CONST = SETTINGS["misc_constants"]["MASS_CONST"]
+STARTING_MASS = SETTINGS["misc_constants"]["STARTING_MASS"]
+VELOCITY_CONST = SETTINGS["misc_constants"]["VELOCITY_CONST"]
+
+FPS = SETTINGS["window"]["FPS"]
+SCREEN_SIZE = SETTINGS["window"]["SCREEN_SIZE"]
+WINDOW_TITLE = SETTINGS["window"]["WINDOW_TITLE"]
+BACKGROUND_IMG = SETTINGS["window"]["BACKGROUND_IMG"]
+ZOOM_INCREMENT = SETTINGS["window"]["ZOOM_INCREMENT"]
+PAN_INCREMENT = SETTINGS["window"]["PAN_INCREMENT"]
 
 def on_event(event:pg.event.Event):
     '''
     A function that performs a specific action for specific events inputted
     '''
-    global running
-    global disp_vects
+    global running, disp_vects
 
     # stop running quit if the pygame window is closed
     if event.type == pg.QUIT:
@@ -49,28 +47,29 @@ def on_event(event:pg.event.Event):
     
     if event.type == pg.KEYDOWN:
         if event.unicode == "v":
-            disp_vects = not disp_vects
+            disp_vects = not disp_vects # toggle displaying velocity and acceleration vectors
         return
 
     # if world.bodies isn't populated, this should only check for a mouse click
     if not world.bodies:
         # add an Body if there isn't one in world.bodies and a mouse click is detected
+        # the not in [4, 5] thing is needed bc apparently a scroll is also registered as a MOUSEBUTTONDOWN event
         if event.type == pg.MOUSEBUTTONDOWN and event.button not in [4, 5]:
             wld_pos = window.window_to_world(Vector(*event.pos))
-            world.add_body(Body(STARTING_MASS, wld_pos, Vector(0, 0), "M"))
+            world.add_body(Body(STARTING_MASS, wld_pos, status="M"))
         # stop the function, since it will throw an error with an unpopulated world.bodies
         return
 
     last_obj = world.bodies[-1] # the last Body appended to world.bodies
 
-    # create a new object if there isn't one being created and add it to world.bodies
+    # create a new body if there isn't one being created and add it to the world
     if event.type == pg.MOUSEBUTTONDOWN and last_obj.status in ["O", "F"] and event.button not in [4, 5]:
         wld_pos = window.window_to_world(Vector(*event.pos))
-        world.add_body(Body(STARTING_MASS, wld_pos, Vector(0, 0), "M"))
+        world.add_body(Body(STARTING_MASS, wld_pos, status="M"))
         return
 
     # changes the mass and radius of an object being added in by changing
-    # it with respect to the distance between the Body and the cursor
+    # it with respect to the distance between the Body and the cursor in the window
     elif event.type == pg.MOUSEMOTION and last_obj.status == "M":
         dist = Vector(*event.pos) - window.world_to_window(last_obj.pos)
         # needed cause mouse can be exactly at the position of body, resulting in a distance of 0
@@ -103,6 +102,7 @@ def manage_keyboard_input():
     '''
     keys = pg.key.get_pressed()
 
+    # pan window with wasd
     if keys[pg.K_w]:
         window.pan(Vector(0, -PAN_INCREMENT/window.zoom_amt))
     if keys[pg.K_a]:
@@ -114,8 +114,8 @@ def manage_keyboard_input():
 
 def simulate():
     '''
-    actually simulates the motion of the Objs, by calculating accel,
-    changing velocity, and moving each Body
+    actually simulates the motion of the Objs, manages keyboard and mouse input
+    and displays everything
     '''
     while running:
         # delta_time is time passed between last and current frame in seconds
@@ -138,7 +138,7 @@ def simulate():
     # quit pygame when the simulation is no longer running
     pg.quit()
 
-# TODO: move this to some diff module, mabye called goofy gimmicks idk 
+# TODO: mabye move this to some diff module, mabye called goofy gimmicks idk 
 def create_obj_circle(num:int, radius:int, center:tuple, mass:int=200, spd:float=0, state:str="F"):
     '''
     adds a circle with a certain radius of num objects with a certan mass, with a velocity
@@ -146,31 +146,11 @@ def create_obj_circle(num:int, radius:int, center:tuple, mass:int=200, spd:float
     '''
     for i in range(num):
         angle = i * 2 * pi / num # angle of the object in radians
-        pos = [center[0] + (radius * cos(angle)), center[1] + (radius * sin(angle))]
-        vel = [spd * -sin(angle), spd * cos(angle)]
+        pos = Vector(center[0] + (radius * cos(angle)), center[1] + (radius * sin(angle)))
+        vel = Vector(spd * -sin(angle), spd * cos(angle))
         world.bodies.append(Body(mass, pos, vel, state))
 
-def world_pos():
-    '''
-    TODO: implement a function that yeilds a position in a world from
-    position in a window by adjusting for zoom and camera panning
-    '''
-    pass
-
 if __name__ == "__main__":
-
-    GRAV_CONST = SETTINGS["physics"]["GRAV_CONST"]
-    MASS_CONST = SETTINGS["physics"]["MASS_CONST"]
-    STARTING_MASS = SETTINGS["physics"]["STARTING_MASS"]
-    VELOCITY_CONST = SETTINGS["physics"]["VELOCITY_CONST"]
-
-    # visual constants
-    FPS = SETTINGS["window"]["FPS"]
-    SCREEN_SIZE = SETTINGS["window"]["SCREEN_SIZE"]
-    WINDOW_TITLE = SETTINGS["window"]["WINDOW_TITLE"]
-    BACKGROUND_IMG = SETTINGS["window"]["BACKGROUND_IMG"]
-    ZOOM_INCREMENT = SETTINGS["window"]["ZOOM_INCREMENT"]
-    PAN_INCREMENT = SETTINGS["window"]["PAN_INCREMENT"]
 
     # sets up pygame
     pg.init()
@@ -186,7 +166,7 @@ if __name__ == "__main__":
 
     clock = pg.time.Clock() # sets up the clock so time can be used for calculations
 
-    disp_vects = False
+    disp_vects = False # bool for togglning the display of accel and velocity vectors
     running = True # setting running to True allows for the simulation to start
 
-    simulate()
+    simulate() # start yay
