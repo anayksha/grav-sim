@@ -4,7 +4,9 @@ A 2D gravity simulation built with python and pygame.
 
 I tried to build it from scratch as much as I could, so it uses its own physics engine with collision mechanics
 
-the sim has been built before this git repo was created and has simply been expanded upon and modified
+The sim has been built before this git repo was created, but it has been heavily expanded upon and modified
+
+You can play the web version of the sim [here](https://anayksha.itch.io/grav-sim) on itch.io
 
 ## Controls
 
